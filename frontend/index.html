@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScamShield - Intelligent Scam Detection System</title>
+    <meta name="description"
+        content="Analyze suspicious messages and detect scam patterns with real-time intelligence extraction">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L3 7V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V7L12 2Z"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+                <h1>ScamShield</h1>
+            </div>
+            <p class="tagline">Intelligent Scam Detection & Intelligence Platform</p>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link active">Analyzer</a>
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="honeypot-test.html" class="nav-link">🕵️ Honeypot Test</a>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Input Section -->
+            <section class="input-section">
+                <h2>Analyze Suspicious Message</h2>
+                <p class="section-description">Paste any suspicious message below to analyze for scam patterns</p>
+                <textarea id="messageInput" class="message-input"
+                    placeholder="Paste suspicious message here...&#10;&#10;Example:&#10;Congratulations! You have won 50,000 rupees in lucky draw. Send 500 processing fee to 9876543210@paytm to claim prize. Offer expires in 24 hours!"
+                    rows="8"></textarea>
+                <div class="input-actions">
+                    <button id="analyzeBtn" class="btn btn-primary">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        Analyze Message
+                    </button>
+                    <button id="clearBtn" class="btn btn-secondary">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                        Clear
+                    </button>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section id="resultsSection" class="results-section hidden">
+                <!-- Threat Level -->
+                <div class="threat-level-card">
+                    <div class="threat-header">
+                        <h3>Threat Assessment</h3>
+                        <div id="threatBadge" class="threat-badge"></div>
+                    </div>
+                    <div class="confidence-meter">
+                        <div class="confidence-bar-bg">
+                            <div id="confidenceBar" class="confidence-bar"></div>
+                        </div>
+                        <div class="confidence-label">
+                            <span>Confidence Score</span>
+                            <span id="confidenceScore" class="confidence-value">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detected Patterns -->
+                <div class="patterns-card">
+                    <h3>
+                        <svg class="card-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V7C19 5.89543 18.1046 5 17 5H15M9 5C9 6.10457 9.89543 7 11 7H13C14.1046 7 15 6.10457 15 5M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5M12 12H15M12 16H15M9 12H9.01M9 16H9.01"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        Detected Patterns
+                    </h3>
+                    <div id="patternsList" class="patterns-list"></div>
+                </div>
+
+                <!-- Extracted Intelligence -->
+                <div class="intelligence-card">
+                    <h3>
+                        <svg class="card-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M13 10V3L4 14H11V21L20 10H13Z" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        Extracted Intelligence
+                    </h3>
+                    <div id="intelligenceData" class="intelligence-grid"></div>
+                </div>
+
+                <!-- Educational Insights -->
+                <div class="insights-card">
+                    <h3>
+                        <svg class="card-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M12 8V12M12 16H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        Why This Was Flagged
+                    </h3>
+                    <div id="insightsList" class="insights-list"></div>
+                </div>
+
+                <!-- Export Options -->
+                <div id="exportSection" class="export-section hidden">
+                    <h3>
+                        <svg class="card-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M4 16V17C4 18.6569 5.34315 20 7 20H17C18.6569 20 20 18.6569 20 17V16M16 8L12 4M12 4L8 8M12 4V16"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        Export Analysis
+                    </h3>
+                    <div class="export-buttons">
+                        <button onclick="window.uiController?.exportCurrentAsJSON()" class="btn btn-export">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M7 21H17C18.1046 21 19 20.1046 19 19V9.41421C19 9.149 18.8946 8.89464 18.7071 8.70711L13.2929 3.29289C13.1054 3.10536 12.851 3 12.5858 3H7C5.89543 3 5 3.89543 5 5V19C5 20.1046 5.89543 21 7 21Z"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                                <path d="M13 3V8C13 8.55228 13.4477 9 14 9H19" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            Export as JSON
+                        </button>
+                        <button onclick="window.uiController?.exportHistoryAsCSV()" class="btn btn-export">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M9 17V11M15 17V15M12 17V13M4 21H20C20.5523 21 21 20.5523 21 20V4C21 3.44772 20.5523 3 20 3H4C3.44772 3 3 3.44772 3 4V20C3 20.5523 3.44772 21 4 21Z"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                            Export History (CSV)
+                        </button>
+                        <button onclick="window.uiController?.copyIntelligence()" class="btn btn-export">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M8 5H6C5.46957 5 4.96086 5.21071 4.58579 5.58579C4.21071 5.96086 4 6.46957 4 7V19C4 19.5304 4.21071 20.0391 4.58579 20.4142C4.96086 20.7893 5.46957 21 6 21H16C16.5304 21 17.0391 20.7893 17.4142 20.4142C17.7893 20.0391 18 19.5304 18 19V18M8 5C8 5.53043 8.21071 6.03914 8.58579 6.41421C8.96086 6.78929 9.46957 7 10 7H14C14.5304 7 15.0391 6.78929 15.4142 6.41421C15.7893 6.03914 16 5.53043 16 5M8 5C8 4.46957 8.21071 3.96086 8.58579 3.58579C8.96086 3.21071 9.46957 3 10 3H14C14.5304 3 15.0391 3.21071 15.4142 3.58579C15.7893 3.96086 16 4.46957 16 5M16 5V7C16 7.53043 15.7893 8.03914 15.4142 8.41421C15.0391 8.78929 14.5304 9 14 9H10C9.46957 9 8.96086 8.78929 8.58579 8.41421C8.21071 8.03914 8 7.53043 8 7"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                            Copy Intelligence
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>ScamShield - Protecting users through transparent scam detection</p>
+            <p class="footer-note">This tool is for educational and protective purposes. Always report scams to
+                authorities.</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Expose UIController instance globally for export buttons
+        document.addEventListener('DOMContentLoaded', () => {
+            window.uiController = new UIController();
+        });
+    </script>
+</body>
+
+</html>

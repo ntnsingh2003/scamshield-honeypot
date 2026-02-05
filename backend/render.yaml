@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: scamshield-honeypot
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false

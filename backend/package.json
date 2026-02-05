@@ -1,0 +1,18 @@
+{
+  "name": "scamshield-honeypot",
+  "version": "1.0.0",
+  "description": "Agentic Honey-Pot API for scam detection and intelligence extraction",
+  "type": "module",
+  "main": "server.mjs",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "node-fetch": "^3.3.0",
+    "dotenv": "^16.3.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

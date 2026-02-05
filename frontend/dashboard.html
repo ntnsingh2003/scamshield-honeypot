@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ScamShield Analytics</title>
+    <meta name="description" content="View analytics and history of scam detection analyses">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .stat-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            text-align: center;
+            transition: transform var(--transition-normal);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .stat-value {
+            font-size: 3rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: var(--spacing-sm) 0;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .history-table th {
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--primary-light);
+            padding: var(--spacing-md);
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+            letter-spacing: 0.5px;
+        }
+
+        .history-table td {
+            padding: var(--spacing-md);
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .history-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .history-table tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .threat-badge-small {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .threat-badge-small.high {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .threat-badge-small.medium {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            color: #000;
+        }
+
+        .threat-badge-small.low {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .message-preview {
+            max-width: 300px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .empty-history {
+            text-align: center;
+            padding: var(--spacing-xl);
+            color: var(--text-muted);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-top: var(--spacing-lg);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L3 7V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V7L12 2Z"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+                <h1>ScamShield</h1>
+            </div>
+            <p class="tagline">Analytics & History Dashboard</p>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Analyzer</a>
+                <a href="dashboard.html" class="nav-link active">Dashboard</a>
+                <a href="honeypot-test.html" class="nav-link">🕵️ Honeypot Test</a>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Statistics Cards -->
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Analyses</div>
+                    <div class="stat-value" id="totalStat">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">High Risk</div>
+                    <div class="stat-value" id="highStat"
+                        style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                        0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Medium Risk</div>
+                    <div class="stat-value" id="mediumStat"
+                        style="background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                        0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Low Risk</div>
+                    <div class="stat-value" id="lowStat"
+                        style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                        0</div>
+                </div>
+            </section>
+
+            <!-- History Table -->
+            <section>
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg);">
+                    <h2>Analysis History</h2>
+                    <div class="action-buttons">
+                        <button onclick="exportHistory()" class="btn btn-secondary">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M4 16V17C4 18.6569 5.34315 20 7 20H17C18.6569 20 20 18.6569 20 17V16M16 8L12 4M12 4L8 8M12 4V16"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                            Export CSV
+                        </button>
+                        <button onclick="clearHistory()" class="btn btn-secondary">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            Clear All
+                        </button>
+                    </div>
+                </div>
+
+                <div id="historyContainer"></div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>ScamShield - Protecting users through transparent scam detection</p>
+            <p class="footer-note">This tool is for educational and protective purposes. Always report scams to
+                authorities.</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        const historyManager = new HistoryManager();
+        const exportManager = new ExportManager();
+
+        function loadDashboard() {
+            // Load statistics
+            const stats = historyManager.getStatistics();
+            document.getElementById('totalStat').textContent = stats.total;
+            document.getElementById('highStat').textContent = stats.high;
+            document.getElementById('mediumStat').textContent = stats.medium;
+            document.getElementById('lowStat').textContent = stats.low;
+
+            // Load history table
+            const history = historyManager.getHistory();
+            const container = document.getElementById('historyContainer');
+
+            if (history.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-history">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.3; margin-bottom: 1rem;">
+                            <path d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V7C19 5.89543 18.1046 5 17 5H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <h3>No Analysis History</h3>
+                        <p>Analyze some messages to see them appear here</p>
+                        <a href="index.html" class="btn btn-primary" style="margin-top: 1rem; display: inline-flex;">Go to Analyzer</a>
+                    </div>
+                `;
+                return;
+            }
+
+            const tableHTML = `
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Date & Time</th>
+                            <th>Threat Level</th>
+                            <th>Confidence</th>
+                            <th>Patterns</th>
+                            <th>Message Preview</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${history.map(entry => `
+                            <tr>
+                                <td>${new Date(entry.timestamp).toLocaleString()}</td>
+                                <td><span class="threat-badge-small ${entry.threatLevel}">${entry.threatLevel}</span></td>
+                                <td>${entry.confidence}%</td>
+                                <td>${entry.patternsCount}</td>
+                                <td class="message-preview">${escapeHtml(entry.message)}</td>
+                                <td>
+                                    <button onclick="deleteEntry(${entry.id})" class="btn-secondary" style="padding: 0.5rem; font-size: 0.875rem;">
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = tableHTML;
+        }
+
+        function deleteEntry(id) {
+            if (confirm('Delete this entry?')) {
+                historyManager.deleteEntry(id);
+                loadDashboard();
+            }
+        }
+
+        function clearHistory() {
+            if (confirm('Are you sure you want to clear all history? This cannot be undone.')) {
+                historyManager.clearAll();
+                loadDashboard();
+            }
+        }
+
+        function exportHistory() {
+            const history = historyManager.getHistory();
+            if (history.length > 0) {
+                exportManager.exportToCSV(history);
+            } else {
+                alert('No history to export.');
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Load dashboard on page load
+        document.addEventListener('DOMContentLoaded', loadDashboard);
+
+        // Refresh every 5 seconds if on the page
+        setInterval(loadDashboard, 5000);
+    </script>
+</body>
+
+</html>

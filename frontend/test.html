@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScamShield - Test Suite</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a2e;
+            color: #f8fafc;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #667eea;
+        }
+
+        h2 {
+            color: #818cf8;
+            margin-top: 30px;
+        }
+
+        .test-case {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .message {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-style: italic;
+        }
+
+        .result {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 3px solid #10b981;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        .pass {
+            color: #10b981;
+        }
+
+        .info {
+            color: #818cf8;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🛡️ ScamShield - Automated Test Suite</h1>
+    <p>This page tests the detection engine with various scam scenarios.</p>
+    <button onclick="runAllTests()">Run All Tests</button>
+    <button onclick="location.href='index.html'">Open Main Application</button>
+
+    <div id="testResults"></div>
+
+    <script src="app.js"></script>
+    <script>
+        const detector = new ScamDetector();
+
+        const testCases = [
+            {
+                name: "Test 1: Lottery/Prize Scam",
+                message: "Congratulations! You have won Rs 50,000 in lucky draw. Urgent! Send processing fee Rs 500 to 9876543210@paytm within 24 hours to claim prize. Call 9123456789 for details.",
+                expectedThreat: "high",
+                expectedMinConfidence: 70,
+                expectedPatterns: ["urgency", "reward", "financial"],
+                expectedExtracted: {
+                    upi: ["9876543210@paytm"],
+                    phone: ["9123456789"]
+                }
+            },
+            {
+                name: "Test 2: Banking/KYC Scam",
+                message: "Your bank account will be blocked. Immediate KYC update required. Click here to verify: bit.ly/kyc123 and enter OTP.",
+                expectedThreat: "high",
+                expectedMinConfidence: 65,
+                expectedPatterns: ["threat", "urgency", "financial", "verification"],
+                expectedExtracted: {
+                    url: ["bit.ly/kyc123"]
+                }
+            },
+            {
+                name: "Test 3: Authority Impersonation",
+                message: "This is income tax department. You have pending tax payment of Rs 25,000. Pay immediately or legal action will be taken. Contact 9555555555.",
+                expectedThreat: "high",
+                expectedMinConfidence: 60,
+                expectedPatterns: ["authority", "threat", "urgency"],
+                expectedExtracted: {
+                    phone: ["9555555555"]
+                }
+            },
+            {
+                name: "Test 4: Tech Support Scam",
+                message: "SECURITY ALERT: Your computer has been infected with virus. Call Microsoft support immediately at 9111111111 for remote assistance.",
+                expectedThreat: "medium",
+                expectedMinConfidence: 40,
+                expectedPatterns: ["techSupport", "urgency"],
+                expectedExtracted: {
+                    phone: ["9111111111"]
+                }
+            },
+            {
+                name: "Test 5: Hinglish Scam",
+                message: "Aapka account block ho jayega. Turant OTP share karein 9999999999@paytm par payment karein. Jaldi karein, aaj hi!",
+                expectedThreat: "high",
+                expectedMinConfidence: 65,
+                expectedPatterns: ["urgency", "threat", "financial"],
+                expectedExtracted: {
+                    upi: ["9999999999@paytm"]
+                }
+            },
+            {
+                name: "Test 6: Legitimate Message (Control)",
+                message: "Your Amazon order has been delivered. Thank you for shopping with us!",
+                expectedThreat: "low",
+                expectedMinConfidence: 0,
+                expectedMaxConfidence: 25,
+                expectedPatterns: [],
+                expectedExtracted: {}
+            }
+        ];
+
+        function runAllTests() {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = '<h2>Test Results</h2>';
+
+            let passed = 0;
+            let failed = 0;
+
+            testCases.forEach((test, index) => {
+                const result = detector.analyze(test.message);
+                const testDiv = document.createElement('div');
+                testDiv.className = 'test-case';
+
+                let testPassed = true;
+                let details = '';
+
+                // Check threat level
+                if (result.threatLevel !== test.expectedThreat) {
+                    testPassed = false;
+                    details += `❌ Threat level mismatch: Expected ${test.expectedThreat}, got ${result.threatLevel}<br>`;
+                } else {
+                    details += `✅ Threat level: ${result.threatLevel}<br>`;
+                }
+
+                // Check confidence score
+                const minConf = test.expectedMinConfidence || 0;
+                const maxConf = test.expectedMaxConfidence || 100;
+                if (result.confidence < minConf || result.confidence > maxConf) {
+                    testPassed = false;
+                    details += `❌ Confidence out of range: Expected ${minConf}-${maxConf}%, got ${result.confidence}%<br>`;
+                } else {
+                    details += `✅ Confidence score: ${result.confidence}%<br>`;
+                }
+
+                // Check patterns
+                if (test.expectedPatterns && test.expectedPatterns.length > 0) {
+                    const detectedPatternNames = result.detectedPatterns.map(p =>
+                        p.name.toLowerCase().replace(/\s+/g, '')
+                    );
+
+                    test.expectedPatterns.forEach(pattern => {
+                        const found = detectedPatternNames.some(name => name.includes(pattern.toLowerCase()));
+                        if (found) {
+                            details += `✅ Pattern detected: ${pattern}<br>`;
+                        } else {
+                            testPassed = false;
+                            details += `❌ Pattern missing: ${pattern}<br>`;
+                        }
+                    });
+                }
+
+                // Check extracted data
+                if (test.expectedExtracted) {
+                    Object.entries(test.expectedExtracted).forEach(([type, values]) => {
+                        if (result.extractedData[type] && result.extractedData[type].length > 0) {
+                            details += `✅ Extracted ${type}: ${result.extractedData[type].join(', ')}<br>`;
+                        } else {
+                            testPassed = false;
+                            details += `❌ Failed to extract ${type}<br>`;
+                        }
+                    });
+                }
+
+                if (testPassed) {
+                    passed++;
+                } else {
+                    failed++;
+                }
+
+                testDiv.innerHTML = `
+                    <h3>${test.name} <span class="${testPassed ? 'pass' : 'fail'}">${testPassed ? '✅ PASS' : '❌ FAIL'}</span></h3>
+                    <div class="message">"${test.message}"</div>
+                    <div class="result">
+                        ${details}
+                        <br><strong class="info">Patterns Found:</strong> ${result.detectedPatterns.length}<br>
+                        <strong class="info">Intelligence Extracted:</strong> ${Object.keys(result.extractedData).length} types<br>
+                        <strong class="info">Insights Generated:</strong> ${result.insights.length}
+                    </div>
+                `;
+                resultsDiv.appendChild(testDiv);
+            });
+
+            const summary = document.createElement('div');
+            summary.className = 'test-case';
+            summary.style.background = 'rgba(99, 102, 241, 0.2)';
+            summary.innerHTML = `
+                <h2>Summary</h2>
+                <p class="pass">✅ Passed: ${passed}/${testCases.length}</p>
+                ${failed > 0 ? `<p style="color: #ef4444;">❌ Failed: ${failed}/${testCases.length}</p>` : ''}
+                <p><strong>${passed === testCases.length ? '🎉 All tests passed!' : '⚠️ Some tests failed'}</strong></p>
+            `;
+            resultsDiv.appendChild(summary);
+        }
+
+        // Run tests on load
+        window.addEventListener('load', () => {
+            runAllTests();
+        });
+    </script>
+</body>
+
+</html>

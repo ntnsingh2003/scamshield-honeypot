@@ -284,6 +284,40 @@ app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
+// Fallback POST route for root - handle API requests sent to root
+app.post("/", authenticate, async (req, res) => {
+    try {
+        console.log("[INFO] POST request to root, treating as API call");
+        
+        // Handle both request formats
+        let sessionId, messageText;
+        
+        if (req.body.sessionId && req.body.message) {
+            sessionId = req.body.sessionId;
+            messageText = req.body.message.text;
+        } else {
+            return res.status(400).json({
+                status: "error",
+                message: "Invalid request format"
+            });
+        }
+
+        // Simple response for testing
+        const reply = "Arre bhai, mera account block ho gaya kya? Main bahut pareshan hun. Aap kaise help karoge?";
+        
+        return res.json({
+            status: "success",
+            reply
+        });
+    } catch (err) {
+        console.error("Error in root POST:", err);
+        return res.status(500).json({
+            status: "error",
+            message: "Server error"
+        });
+    }
+});
+
 // Health check endpoint for deployment monitoring
 app.get("/health", (req, res) => {
     res.json({
@@ -318,15 +352,32 @@ app.get("/api/honeypot", (req, res) => {
 app.post("/api/honeypot", authenticate, async (req, res) => {
 
     try {
-        console.log("[INFO] Received honeypot request:", { sessionId: req.body.sessionId, messageLength: req.body.message?.text?.length });
+        console.log("[INFO] Received honeypot request:", JSON.stringify(req.body, null, 2));
 
-        const { sessionId, message } = req.body;
-
-        if (!sessionId || !message?.text) {
-            console.log("[ERROR] Malformed request:", { sessionId, hasMessage: !!message, hasText: !!message?.text });
+        // Handle both request formats - hackathon format and original format
+        let sessionId, messageText;
+        
+        if (req.body.sessionId && req.body.message) {
+            // Hackathon format
+            sessionId = req.body.sessionId;
+            messageText = req.body.message.text;
+        } else if (req.body.sessionId && req.body.message?.text) {
+            // Original format
+            sessionId = req.body.sessionId;
+            messageText = req.body.message.text;
+        } else {
+            console.log("[ERROR] Malformed request:", req.body);
             return res.status(400).json({
                 status: "error",
-                message: "Malformed request. Required: sessionId (string) and message.text (string)"
+                message: "Malformed request. Required: sessionId and message.text"
+            });
+        }
+
+        if (!sessionId || !messageText) {
+            console.log("[ERROR] Missing required fields:", { sessionId, messageText });
+            return res.status(400).json({
+                status: "error",
+                message: "Missing required fields: sessionId and message.text"
             });
         }
 
@@ -363,11 +414,11 @@ app.post("/api/honeypot", authenticate, async (req, res) => {
         // Add scammer message
         session.history.push({
             role: "user",
-            content: message.text
+            content: messageText
         });
 
         // Detect scam and update confidence
-        const result = detectScam(message.text);
+        const result = detectScam(messageText);
 
         if (result.scam && !session.scamDetected) {
             session.scamDetected = true;
@@ -377,7 +428,7 @@ app.post("/api/honeypot", authenticate, async (req, res) => {
         }
 
         // Extract and merge intelligence (deduplicated)
-        const extracted = extractData(message.text);
+        const extracted = extractData(messageText);
 
         Object.keys(extracted).forEach(k => {
             if (session.intelligence[k] && Array.isArray(session.intelligence[k])) {
@@ -426,22 +477,14 @@ app.post("/api/honeypot", authenticate, async (req, res) => {
             sessionId,
             scamDetected: session.scamDetected,
             confidence: session.confidence,
-            intelligenceCount: session.intelligenceCount
+            intelligenceCount: session.intelligenceCount,
+            reply: reply.substring(0, 50) + "..."
         });
 
-        // Send response with comprehensive hackathon metrics
+        // Send response in hackathon format - ONLY status and reply
         return res.json({
             status: "success",
-            scamDetected: session.scamDetected,
-            confidence: session.confidence,
-            agentEngaged: session.scamDetected,
-            reply,
-            conversationMetrics: {
-                turnNumber: session.turnCount,
-                durationSeconds: engagementDuration,
-                intelligenceExtracted: session.intelligenceCount
-            },
-            extractedIntelligence: session.intelligence
+            reply
         });
 
     } catch (err) {

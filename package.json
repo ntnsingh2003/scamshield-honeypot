@@ -1,6 +1,6 @@
 {
   "name": "scamshield-honeypot-root",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Root package for ScamShield Honeypot deployment",
   "scripts": {
     "install": "cd backend && npm install",

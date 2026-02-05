@@ -1,11 +1,19 @@
 import express from "express";
 import fetch from "node-fetch";
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
+
+// Serve static files from frontend directory
+app.use(express.static(path.join(__dirname, '../frontend')));
 
 // Enable CORS for frontend
 app.use((req, res, next) => {
@@ -270,6 +278,11 @@ async function sendFinalResult(session) {
 
 
 // ============ MAIN API ===================
+
+// Root route - serve the main frontend page
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/index.html'));
+});
 
 // Health check endpoint for deployment monitoring
 app.get("/health", (req, res) => {
